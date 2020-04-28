@@ -1146,9 +1146,9 @@ def f1(a, b, c=10, d=20):
 
 可变参数指的是“可变数量的参数”。分为两种情况：
 
-1.* param（一个星号），将多个参数收集到一个“元组”对象中。
+1.`*param`（一个星号），将多个参数收集到一个“元组”对象中。
 
-2.** param（两个星号），将多个参数收集到一个“字典”对象中。
+2.`**param`（两个星号），将多个参数收集到一个“字典”对象中。
 
 ```python
 def f2(a, b, *c):
@@ -1255,3 +1255,142 @@ for i in range(1,6):
 5 != 120
 ```
 
+### 嵌套函数（内部函数）
+
+嵌套函数：在函数内部定义的函数！
+
+```python
+def outer():
+    print("outer running ...")
+    def inner():
+        print('inner running ...')
+    inner()
+outer()
+outer running ...
+inner running ...
+```
+
+一般什么情况下使用嵌套函数？
+
+- 封装 - 数据隐藏
+
+  ​	外部无法访问“嵌套函数”
+
+- 贯彻 DRY（don't repeat yourself）原则
+
+  ​	嵌套函数可以让我们在函数内部避免重复代码
+
+- 闭包
+
+## nonlocal 关键字
+
+nonlocal 用来声明外层的全局变量
+
+global 	用来声明全局变量
+
+```python
+def outer():
+    b = 10
+
+    def inner():
+        nonlocal b  # 声明外部函数的局部变量
+        print("inner b:", b)
+        b = 20
+    inner()
+    print("outer b:", b)
+
+outer()
+
+inner b: 10
+outer b: 20
+```
+
+## LEGB 规则
+
+​		python在查找“名称”时，是按照LEGB规则查找的：Local --> Enclosed --> Global --> Built in。
+
+- Local		指的就是函数或者类的方法内部
+- Enclosed  指的是嵌套函数（一个函数包裹另一个函数，闭包）
+- Global       指的是模块中的全局变量
+- Built in       指的是python为自己保留的特殊名称
+
+如果某个 name 映射在局部（local）命名空间中没有找到，接下来就会在闭包作用域（enclosed）进行搜索，如果闭包作用域也没有找到，python就会到全局（global）命名空间中进行查找，最后会在内建（built-in）命名空间搜索（如果一个名称在所有的命名空间中都没有找到，就会产生一个NameError）。
+
+```python
+#str()                    #built-in
+#str = "global str"       #global
+def outer():
+
+    #str = "outer str"     #enclosed
+    def inner():
+        #str = "inner str" #local
+        print(str)
+
+    inner()
+
+outer()
+```
+
+# 面向对象编程
+
+## 类的定义
+
+定义类的语法格式：
+
+```
+class 类名：
+	类体
+```
+
+要点如下：
+
+​	1.类体中我们可以定义属性和方法
+
+​	2.属性用来描述数据，方法（即函数）用来描述这些数据相关的操作
+
+```python
+class Student:
+    def __init__(self, name, score):   # 构造方法的第一个参数必须是self
+        self.name = name               # 实例属性
+        self.score = score
+
+    def say_score(self):                # 实例方法
+        print(self.name, "的分数是：", self.score)
+
+
+s1 = Student("张三", 88)            #默认自动调用构造方法 __init()__
+s1.say_score()
+```
+
+### 构造函数 `__init__()`
+
+​		类是抽象的，也称之为“对象的模板”。我们需要通过类这个模板，创建类的实例对象，然后才能使用类定义的功能。
+
+​		我们之前说过一个python对象包含三个部分：id(identity识别码)、type(对象类型)、value(对象的值)。
+
+现在我们可以更近以部的讲一个python对象包含如下部分：
+
+  - id(identity识别码)
+
+  - type(对象类型)
+
+  - value(对象的值)
+
+    ​	1.属性（attribute）
+
+    ​	2.方法（method）
+
+创建对象，我们需要定义构造函数 `__init__()` 方法。构造方法用于执行“实例对象的初始化工作”,即对象创建后，初始化当前对象的相关属性，无返回值。
+
+`__init__()`的要点如下：
+
+- 名称固定，必须为 `__init__()`
+- 第一个参数固定，必须为：self。self指的就是刚刚创建好的实例对象。
+- 构造函数通常用来初始化实例对象的实例属性。如上面的代码中`__init__()`就是初始化实例属性：name和score
+- 通过“类名（参数列表）”来调用构造函数。调用后，将创建好的对象返回给相应的变量。如`s1 = Student("张三", 88)`
+- `__init__()`方法：初始化创建好的对象，初始化指的是：“给实例属性赋值”
+- `__new__()`方法：用于创建对象，但我们一般无需重新定义该方法
+
+注：
+
+1.python中的 self 相当于Java中的 this 关键字。python中self必须为构造函数的第一个参数，名字可以任意修改，但一般都叫做 self。
