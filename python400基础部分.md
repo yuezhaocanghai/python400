@@ -1453,3 +1453,441 @@ def 方法名(self[,形参列表])：
 3.pass 空语句
 
 4.`isinstance(对象，类型)`判断“对象”是不是“指定类型”
+
+## 类对象
+
+实际上，当解释器执行class语句时就会创建一个类对象。
+
+## 类属性和类方法
+
+### 类属性
+
+类属性是丛属于“类对象”的属性，也称为“类变量”。由于类属性从属于类对象，可以被所有实例对象共享。
+
+类属性的定义方式：
+
+```python
+class 类名：
+	类变量名 = 初始值
+```
+
+在类内或者类的外面，我们可以通过：“类名.类变量名” 来读写。
+
+```python 
+class Student:
+    
+    company = 'sxt'  # 类属性
+    count = 0        #类属性
+    
+    def __init__(self,name,score):
+        self.name = name    # 实例属性
+        self.score = score
+        Student.count += 1
+        
+    def say_score(self):    # 实例方法
+        print("我的公司是：",Student.company)
+        print(self.name,"的分数是：", self.score)
+```
+
+### 类方法
+
+类方法是从属于“类对象”的方法。类方法通过装饰器 `@classmethod` 来定义，格式如下：
+
+```python
+@classmethod
+def 类方法名(cls, [,形参列表])：
+	函数体
+```
+
+要点如下：
+
+​	1.`@classmethod` 必须位于方法上面一行；
+
+​	2.第一个 `cls` 必须有：`cls` 指的就是“类对象”本身；
+
+​	3.调用类方法格式：“类名.类方法名（参数列表）”。参数列表中，不需要也不能给 `cls`传值；
+
+​	4.类方法中访问实例属性和实例方法会导致错误；
+
+​	5.子类继承父类方法，传入 `cls` 是子类对象，而非父类对象；
+
+```python
+class Student:
+    company = 'SXT'
+
+    @classmethod
+    def printCompany(cls):
+        print(cls.company)
+        
+Student.printCompany()
+SXT
+```
+
+### 静态方法
+
+python中允许定义与“类对象”无关的方法，称为“静态方法”。
+
+“静态方法”和在模块中定义普通函数没有区别，只不过“静态方法”放到了“类的名字空间里面”，需要通过“类调用”。
+
+静态方法通过装饰器 `@staticmethod` 来定义，格式如下：
+
+```python
+@staticmethod
+def 静态方法名([形参列表])：
+	函数体
+```
+
+要点如下：
+
+1.`@staticmethod` 必须位于方法上面一行
+
+2.调用静态方法格式：“类名.静态方法名(参数列表)”。
+
+3.静态方法中访问实例属性和实例方法会导致错误。
+
+注意：类方法、静态方法中不能调用实例属性和实例方法
+
+## \__del __  方法（析构函数）和垃圾回收机制
+
+​		`__del__` 方法称为“析构方法”,用于实现对象被销毁时所需的操作。比如：释放对象占用的资源。例如：打开的文件资源、网络连接等。
+
+​		python 实现自动的垃圾回收，当对象没有被引用时（引用计数为0）,由垃圾回收器调用 `__del__`方法。
+
+我们也可以通过 del 语句删除对象，从而保证调用 `__del__` 方法。
+
+系统会自动提供`__del__`方法，一般不需要自定义析构方法。
+
+```python
+class Person:
+
+    def __del__(self):
+        print("销毁对象：{0}".format(self))
+
+p1 = Person()
+p2 = Person()
+del p2
+print("程序结束")
+
+销毁对象：<__main__.Person object at 0x0000017C93649240>  # 通过del p2销毁
+程序结束
+销毁对象：<__main__.Person object at 0x0000017C935875F8>  #程序结束自动销毁p1
+
+```
+
+## \__call__方法和可调用对象
+
+定义了 `__call__` 方法的对象，称为“可调用对象”,即该对象可以像函数一样被调用。
+
+## python中方法没有重载
+
+​		python中，方法的参数没有生命类型（调用时确定参数的类型），参数的数量也可以有可变参数控制，因此，python中是没有方法重载的。定义一个方法可以有多种调用方式，相当于实现了其它语言中的方法的重载。
+
+​		如果我们在类体中定义了多个重名的方法，只有最后一个方法有效。
+
+​		建议：不要使用重名的方法！python中方法没有重载。
+
+```python
+# python中没有方法的重载，定义多个重名方法只有最后一个有效
+class Person:
+
+    def say_hi(self):
+        print("hello")
+
+    def say_hi(self,name):
+        print("{0},hello".format(name))
+
+p1 = Person()
+
+p1.say_hi() # 不带参，报错
+```
+
+### 方法的动态性
+
+python时动态语言，我们可以动态的为类添加新的方法，或者动态的修改类的已有的方法。
+
+### 私有属性和私有方法（实现封装）
+
+​		python对类的成员没有严格的访问控制权限，这与其他面向对象语言有区别，关于私有属性和私有方法，有如下要点：
+
+​		1.通常我们约定，两个下划线开头的属性是私有的（private）。其他为公共的（public）。
+
+​		2.类内部可以访问私有属性（方法）
+
+​		3.类内部不能直接访问私有属性（方法）
+
+​		4.类内部可以通过“\__类名 __私有属性（方法）名” 访问私有属性（方法）
+
+【注】方法本质上也是属性！只不过是可以通过（）执行而已。
+
+## @property 装饰器
+
+@property 可以将一个方法的调用方式编程“属性调用”。下面是一个简单示例：
+
+```python
+class Emloyee:
+
+    def __init__(self, name, salary):
+        self.__name = name
+        self.__salary = salary
+
+'''
+    def get_salary(self):
+        return self.__salary
+
+    def set_salary(self, salary):
+        if 1000 < salary < 50000:
+            self.__salary = salary
+        else:
+            print("薪水在1000--50000这个范围")
+'''
+
+
+    @property
+    def salary(self):
+        return self.__salary
+
+    @salary.setter
+    def salary(self, salary):
+        if 1000 < salary < 50000:
+            self.__salary = salary
+        else:
+            print("薪水在1000--50000这个范围")
+
+```
+
+# 面相对象的三大特征介绍
+
+### 封装（隐藏）
+
+​		隐藏对象的属性和实现细节，只对外提供必要的方法，相当于将“细节封装起来”，只对外暴露“相关调用方法”。
+
+​		通过前面学习的“私有属性、私有方法”的方式，实现“封装”。python追求简洁的语法，没有严格的语法级别的“访问控制符”，更多的是依靠程序员自觉实现。
+
+###继承
+
+​		继承可以让子类具有父类的特性，提高了代码的重用性。
+
+​		从设计上是一种增量进化，原有父类设计不变的情况下，可以增加新的功能，或者改进已有的算法。
+
+### 多态
+
+​		多态是指同一个方法调用由于对象不同会产生不同的行为。
+
+## 继承
+
+​		继承是面向对象程序设计的重要特征，也是实现“代码复用”的重要手段。
+
+​		如果有一个新类继承自一个设计好的类，就直接具备了已有类的特征，就大大降低了工作难度。已有的类我们称为“父类或基类”，新的类我们称为“子类或者派生类”。
+
+### 语法格式
+
+​		python支持多重继承，一个子类可以继承多个父类。继承的语法格式如下：
+
+```python
+class 子类类名(父类1[,父类2， ...]):
+    类体
+```
+
+​		如果在类定义中没有指定父类，则默认父类是 object 类，也就是说，object 是所有类的父类，里面定义了一些所有类共有的默认实现，如：`__new__()`。
+
+​		定义子类时，必须在其构造函数中调用父类的构造函数。调用格式如下：
+
+```python
+父类名.__init__(self,参数列表)
+```
+
+```python
+class Person:
+
+    def __init__(self, name, age):
+        self.name = name
+        self.__age = age # 私有属性
+
+    def say_age(self):
+        print("年龄，年龄，我也不知道")
+
+
+class Student(Person):
+
+    def __init__(self, name, age, score):
+        Person.__init__(self, name, age) # 必须显式的调用父类初始化方法，不然解释器不回去调用
+        self.score = score
+
+
+s1 = Student("张三", 20, 90)
+s1.say_age()
+print(s1.name)
+# print(s1.age)  # 子类虽然继承了父类的私有属性，但是不能直接用
+print(dir(s1))  # 查看属性
+print(s1._Person__age)  # 调用父类的私有方法
+```
+
+### 类成员的继承和重写
+
+1.成员继承：子类继承了父类除构造方法之外的所有成员。
+
+2.方法重写：子类可以重新定义父类中的方法，这样就会覆盖父类的方法，也成为“重写”。
+
+### 查看类的继承层级结构
+
+通过类的方法 `mro()` 或者类的属性 `__mro__` 可以输出这个类的继承层次结构。
+
+```python
+class A:
+    pass
+class B(A):
+    pass
+class C(B):
+    pass
+
+print(C.mro())
+[<class '__main__.C'>, <class '__main__.B'>, <class '__main__.A'>, <class 'object'>]
+
+```
+
+### object 根类
+
+​		object 类是所有类的父类。因此所有的类都是 object 类的属性和方法。我们显然有必要深入研究一下 object 类的结构。
+
+#### dir() 查看对象属性
+
+### 重写 \__str__() 方法
+
+​		object 有一个 `__str__()` 方法，用于返回一个对于“对象的描述”，对应于内置函数 `str()` 经常用于print() 方法，帮助我们查看对象的信息，`__str__()` 可以重写。
+
+```python
+class Person:
+
+    def __init__(self, name):
+        self.name = name
+    def __str__(self):
+        return "名字是：{0}".format(self.name)
+    
+p = Person("张三")
+print(p)
+
+<__main__.Person object at 0x000002381B2F75F8>  # object默认
+名字是：张三   # 重写__str__() 方法
+```
+
+### 多重继承
+
+​		python支持多重继承，一个子类可以有多个“直接父类”。这样，就具备了“多个父类” 的特点。但是这样会被“类的整体层次”搞得异常复杂，尽量避免使用。
+
+### MRO() 
+
+​		python 支持多重继承，如果父类中有相同名字的方法，在子类没有指定父类名时，解释器将“从左向右”。
+
+MRO(Method Resolution Order)：方法解析顺序。我们可以通过 mro() 方法获得“类的层次机构”，方法解析顺序也是按照这个“类的层次结构”寻找的。
+
+### super() 获得父类定义
+
+在子类中，如果想要获得父类的方法时，我们可以通过 super() 来做。
+
+super() 代表父类的定义，不是父类对象。
+
+```python
+class A:
+    def say(self):
+        print("A:", self)
+
+class B(A):
+
+    def say(self):
+        # A.say(self)
+        super().say()
+        print("B:", self)
+
+
+B().say()
+A: <__main__.B object at 0x000001E725169438>
+B: <__main__.B object at 0x000001E725169438>
+```
+
+## 多态
+
+多态（polymorphism）是指同一个方法调用由于对象不同可能会产生不同的行为。
+
+使用多态要注意以下两点：
+
+1.多态是方法的多态，属性没有多态。
+
+2.多态的存在有2个必要条件：继承、方法重写
+
+```python
+class Man:
+    def eat(self):
+        print("饿了，吃饭了")
+
+
+class Chinese(Man):
+    def eat(self):
+        print("中国人用筷子吃饭")
+
+class English(Man):
+    def eat(self):
+        print("英国人用叉子吃饭")
+
+
+class Indian(Man):
+    def eat(self):
+        print("印度人用右手吃饭")
+
+
+def manEat(m):
+    if isinstance(m, Man): # 多态，一个方法调用，根据对象不同调用不同的方法
+        m.eat()
+    else:
+        print("不能吃饭")
+
+manEat(Chinese())
+manEat(English())
+中国人用筷子吃饭
+英国人用叉子吃饭
+```
+
+### 特殊方法和运算符重载
+
+#### 常见的特殊方法统计如下：
+
+- `__init__` 构造方法 
+- `__del__`   析构方法
+- `__repr__`,`__str__` 打印、转换
+- `__call__`  函数调用
+- `__getattr__` 点号运算  例如： a.xxx
+- `__setattr__`  属性赋值  例如：a.xxx = value
+- `__getitem__` 索引运算  例如：a[key]
+- `__setitem__`  索引赋值  例如：a[key] = value
+- `__len__`  长度 例如：len(a)
+
+#### 运算符对应的方法
+
+- \+   :  `__add__`  :  加法
+- \-    :  `__sub__`   :  减法
+- \<、<=、== ：`__lt__`、`__le__`、`__eq__`  ：比较运算符
+- \>、>=、!=   :  `__gt__`、`__ge__`、`__ne__` ：比较运算符
+- | 、^、&  ：`__or__`、`__xor__`、`__and__`   :  或、异或、与
+- << 、>> ：`__lshift__`、`__rshift__`  :  左移、右移
+- *、/、%、//  ：`__mul__`、`__truediv__`、`__mod__`、`__floordiv__`  :  乘，浮点除，模运算（取余）、整数除
+- \**   :  `__pow__`   :  指数运算
+
+### 特殊属性
+
+`obj.__dict__`  : 对象的属性字典
+
+`obj.__class__`: 对象所属的类
+
+`class.__bases__`  :  类的基类元组（多继承）
+
+`class.__base__` ：类的基类
+
+`class.__mro__`：类的层次结构
+
+`class.__subclasses__()` :子类列表
+
+## 组合
+
+​		“is-a” 关系，我们可以使用“继承”。从而实现子类拥有的父类的方法和属性。“is-a" 关系指的是类似于这样的关系：狗是动物，dog is animal 。狗类就应该继承动物类。
+
+​		”has-a“ 关系，我们可以使用”组合“,也能实现一个类拥有另一个类的方法和属性。
+
